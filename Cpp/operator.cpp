@@ -6,21 +6,21 @@ class Warehouse {
 		apple;
 public:
 	Warehouse(int a_beef, int a_pork, int a_apple)
+		: beef(a_beef)
+		, pork(a_pork)
+		, apple(a_apple)
 	{
-		beef = a_beef;
-		pork = a_pork;
-		apple = a_apple;
 	}
 
-	Warehouse operator+(Warehouse o)
+	Warehouse operator+(const Warehouse &o) const
 	{
 		Warehouse res(beef + o.beef, pork + o.pork, apple + o.apple);
 		return res;
 	}
 
-	int getBeef() { return beef; }
-	int getPork() { return pork; }
-	int getApple() { return apple; }
+	int getBeef() const { return beef; }
+	int getPork() const { return pork; }
+	int getApple() const { return apple; }
 };
 
 int main()
@@ -32,5 +32,6 @@ int main()
 		(obj1 + obj2).getBeef(),
 		(obj1 + obj2).getPork(),
 		(obj1 + obj2).getApple());
+
 	return 0;
 }
