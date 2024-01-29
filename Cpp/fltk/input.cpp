@@ -1,11 +1,9 @@
 #include <Fl/Fl.H>
 #include <FL/Enumerations.H>
 #include <FL/Fl_Button.H>
-#include <FL/Fl_Input_.H>
 #include <Fl/Fl_Input.H>
 #include <Fl/Fl_Window.H>
-#include <Fl/Fl_Multiline_Output.H>
-// #include <cstdio> // for printf
+#include <Fl/Fl_Output.H>
 
 enum {
 	max_buttons = 3,
@@ -25,25 +23,31 @@ enum {
 	button_quit
 };
 
-static Fl_Multiline_Output *output; // VERY DANGEROUS VAR!!!
-
 static const char *button_names[max_buttons] = {
 	"Say",
 	"Clear",
 	"Quit"
 };
 
+struct UserInterface {
+	Fl_Output *output;
+	Fl_Window *win;
+	Fl_Input *field;
+	Fl_Button *button[max_buttons];
+};
+
 static void say_callback(Fl_Widget *, void *user)
 {
-	// printf("%s\n", ((Fl_Input *)user)->value());
-	output->value(((Fl_Input *)user)->value());
-	((Fl_Input *)user)->take_focus();
+	UserInterface *ui = (UserInterface *)user;
+	ui->output->value(ui->field->value());
+	ui->field->take_focus();
 }
 
 static void clear_callback(Fl_Widget *, void *user)
 {
-	((Fl_Input *)user)->value("");
-	((Fl_Input *)user)->take_focus();
+	UserInterface *ui = (UserInterface *)user;
+	ui->field->value("");
+	ui->field->take_focus();
 }
 
 static void exit_callback(Fl_Widget *w, void *)
@@ -61,25 +65,26 @@ static void exit_callback(Fl_Widget *w, void *)
 
 int main()
 {
+	UserInterface *ui = new UserInterface;
+
 	int win_w = button_w*max_buttons + space*(max_buttons + 1);
 	int win_h = button_h + input_h + output_h + space*4;
-	Fl_Window *win = new Fl_Window(win_w, win_h, "Input");
+	ui->win = new Fl_Window(win_w, win_h, "Input");
 
-	output = new Fl_Multiline_Output(
+	ui->output = new Fl_Output(
 		space, space, output_w, output_h);
-	output->box(FL_FLAT_BOX);
-	output->color(fl_rgb_color(220, 220, 220));
+	ui->output->box(FL_FLAT_BOX);
+	ui->output->color(fl_rgb_color(220, 220, 220));
 
-	Fl_Input *field = new Fl_Input(
+	ui->field = new Fl_Input(
 		space + label_w, output_h + space*2, input_w, input_h, "Type:");
-	field->callback(say_callback, (void *)field);
-	field->when(FL_WHEN_ENTER_KEY | FL_WHEN_NOT_CHANGED); // output when pressing enter
-	field->take_focus();
+	ui->field->callback(say_callback, (void *)ui);
+	ui->field->when(FL_WHEN_ENTER_KEY | FL_WHEN_NOT_CHANGED); // output when pressing enter
+	ui->field->take_focus();
 
-	Fl_Button *button[max_buttons];
 	for(int i = 0; i < max_buttons; i++)
 	{
-		button[i] = new Fl_Button(
+		ui->button[i] = new Fl_Button(
 			space + (space + button_w)*i,
 			win_h - button_h - space,
 			button_w,
@@ -87,11 +92,11 @@ int main()
 			button_names[i]);
 	}
 
-	button[button_say]->callback(say_callback, (void *)field);
-	button[button_clear]->callback(clear_callback, (void *)field);
-	button[button_quit]->callback(exit_callback);
+	ui->button[button_say]->callback(say_callback, (void *)ui);
+	ui->button[button_clear]->callback(clear_callback, (void *)ui);
+	ui->button[button_quit]->callback(exit_callback);
 
-	win->end();
-	win->show();
+	ui->win->end();
+	ui->win->show();
 	return Fl::run();
 }
